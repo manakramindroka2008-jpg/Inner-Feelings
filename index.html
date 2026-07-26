@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230b0c10' stroke='%23c9a86a' stroke-width='4'/><text x='50%' y='62%' font-size='45' text-anchor='middle' fill='%23c9a86a' font-family='serif' font-weight='bold'>IF</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inner Feelings</title>
+
+    <!-- Modern Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ==========================================
+       CSS STYLES & THEME VARIABLES
+       ========================================== */
+        :root {
+            --bg-color: #0b0c10;
+            --card-bg: #14161d;
+            --text-main: #e0e6ed;
+            --text-muted: #94a3b8;
+            --accent: #c9a86a;
+            --accent-hover: #e5c17c;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --font-heading: 'Cinzel', serif;
+            --font-subheading: 'Playfair Display', serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* --- ROTATING LOADER SCREEN --- */
+        #loader-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease, visibility 1s;
+        }
+
+        .loader-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid transparent;
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1.8s linear infinite;
+        }
+
+        .loader-ring::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 2px solid transparent;
+            border-bottom-color: rgba(201, 168, 106, 0.4);
+            border-radius: 50%;
+            animation: spin-reverse 2.5s linear infinite;
+        }
+
+        .loader-title {
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            color: var(--accent);
+            text-transform: uppercase;
+            text-align: center;
+            padding: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin-reverse {
+            0% {
+                transform: rotate(360deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        /* --- NAVIGATION BAR --- */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 18px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(11, 12, 16, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .brand-logo {
+            font-family: var(--font-heading);
+            font-size: 1.3rem;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.3s ease;
+            width: 180px;
+        }
+
+        .search-input:focus {
+            width: 240px;
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        .admin-btn:hover {
+            background: var(--accent);
+            color: var(--bg-color);
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 100px 20px 40px;
+            background: radial-gradient(circle at center, rgba(201, 168, 106, 0.05) 0%, transparent 70%);
+        }
+
+        .hero-subtitle {
+            font-family: var(--font-subheading);
+            font-style: italic;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .hero-title {
+            font-family: var(--font-heading);
+            font-size: 3.5rem;
+            letter-spacing: 4px;
+            color: var(--accent);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .hero-description {
+            max-width: 650px;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        .scroll-down {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--accent);
+            padding-bottom: 4px;
+            transition: 0.3s ease;
+        }
+
+        .scroll-down:hover {
+            color: var(--accent-hover);
+        }
+
+        /* --- MAIN CONTENT --- */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        /* Story Cards */
+        .story-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .story-card:hover {
+            border-color: rgba(201, 168, 106, 0.4);
+        }
+
+        .story-header {
+            padding: 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .story-title {
+            font-family: var(--font-subheading);
+            font-size: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .story-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .expand-icon {
+            color: var(--accent);
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .story-card.open .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .chapters-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .chapter-item {
+            padding: 15px 25px;
+            border-top: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chapter-item:hover {
+            background: rgba(201, 168, 106, 0.08);
+        }
+
+        .chapter-title {
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        /* Reader View */
+        #reader-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-color);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 80px 20px 40px;
+        }
+
+        .reader-content {
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        .close-reader {
+            position: fixed;
+            top: 25px;
+            right: 8%;
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .reader-chapter-title {
+            font-family: var(--font-subheading);
+            font-size: 2.2rem;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .reader-body {
+            font-size: 1.05rem;
+            color: #cbd5e1;
+            white-space: pre-line;
+            line-height: 1.9;
+        }
+
+        /* Admin Panel Modal */
+        #admin-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .admin-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            width: 100%;
+            max-width: 650px;
+            border-radius: 8px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .admin-content h3 {
+            font-family: var(--font-heading);
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .admin-content input,
+        .admin-content textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 4px;
+            outline: none;
+            font-family: var(--font-body);
+        }
+
+        .admin-content button {
+            background: var(--accent);
+            color: var(--bg-color);
+            border: none;
+            padding: 10px 18px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .btn-danger {
+            background: var(--danger) !important;
+            color: #fff !important;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-hover) !important;
+        }
+
+        .admin-tab-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .admin-tab-btn {
+            background: transparent !important;
+            color: var(--text-muted) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+
+        .admin-tab-btn.active {
+            background: var(--accent) !important;
+            color: var(--bg-color) !important;
+        }
+
+        .manage-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .manage-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .manage-chapter-list {
+            margin-top: 10px;
+            padding-left: 15px;
+            border-left: 2px solid var(--accent);
+        }
+
+        .manage-chapter-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 1. ROTATING LOADING SCREEN -->
+    <div id="loader-screen">
+        <div class="loader-container">
+            <div class="loader-ring"></div>
+            <div class="loader-title">Inner Feelings</div>
+        </div>
+    </div>
+
+    <!-- 2. STICKY TOP NAVIGATION -->
+    <nav>
+        <a href="#" class="brand-logo">Inner Feelings</a>
+        <div class="nav-actions">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search stories..."
+                onkeyup="filterStories()">
+            <button class="admin-btn" onclick="openAdmin()">Owner Login</button>
+        </div>
+    </nav>
+
+    <!-- 3. HERO SECTION -->
+    <header class="hero">
+        <div class="hero-subtitle">A collection of quiet thoughts & silent stories</div>
+        <h1 class="hero-title">Inner Feelings</h1>
+        <p class="hero-description">"We live in worlds we speak aloud, and universes we keep inside."</p>
+        <a href="#stories-section" class="scroll-down">EXPLORE STORIES ↓</a>
+    </header>
+
+    <!-- 4. MAIN STORIES CONTAINER -->
+    <main class="container" id="stories-section">
+        <h2 class="section-title">Stories & Chapters</h2>
+        <div id="stories-list">
+            <!-- Dynamic Story Items will load here -->
+        </div>
+    </main>
+
+    <!-- 5. READING DRAWER -->
+    <div id="reader-view">
+        <button class="close-reader" onclick="closeReader()">← Back to List</button>
+        <div class="reader-content">
+            <h2 id="reader-title" class="reader-chapter-title"></h2>
+            <div id="reader-body" class="reader-body"></div>
+        </div>
+    </div>
+
+    <!-- 6. OWNER ADMIN PANEL MODAL -->
+    <div id="admin-modal">
+        <!-- Password Login Box -->
+        <div class="admin-content" id="admin-login-box" style="max-width: 400px;">
+            <h3>Owner Passcode</h3>
+            <input type="password" id="adminPass" placeholder="Enter owner key (Default: 1234)">
+            <button onclick="verifyAdmin()">Login</button>
+            <button onclick="closeAdmin()" style="background: transparent; color: var(--text-muted);">Cancel</button>
+        </div>
+
+        <!-- Main Admin Dashboard -->
+        <div class="admin-content" id="admin-panel-box" style="display: none;">
+            <h3>Content Management Dashboard</h3>
+
+            <div class="admin-tab-nav">
+                <button class="admin-tab-btn active" id="tab-add-btn" onclick="switchTab('add')">Add New</button>
+                <button class="admin-tab-btn" id="tab-manage-btn" onclick="switchTab('manage')">Manage & Delete
+                    Stories</button>
+            </div>
+
+            <!-- Tab 1: Add New Content -->
+            <div id="tab-add-content">
+                <input type="text" id="newStoryTitle" placeholder="Story Title (e.g., Echoes of Silence)">
+                <input type="text" id="newStoryDesc"
+                    placeholder="Short Description (e.g., Reflections on quiet moments)">
+                <input type="text" id="newChapterTitle" placeholder="Chapter Title (e.g., Chapter 1: Unspoken Words)">
+                <textarea id="newChapterText" rows="6"
+                    placeholder="Write or paste your chapter text here..."></textarea>
+                <button onclick="saveNewChapter()">Publish Chapter</button>
+                <button onclick="closeAdmin()" style="background: transparent; color: var(--text-muted);">Close</button>
+            </div>
+
+            <!-- Tab 2: Manage & Delete Content -->
+            <div id="tab-manage-content" style="display: none;">
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+                    Select any story or chapter to customize or permanently delete it.
+                </p>
+                <div id="admin-story-manager">
+                    <!-- Dynamic story manager cards will populate here -->
+                </div>
+                <button onclick="closeAdmin()"
+                    style="background: transparent; color: var(--text-muted); margin-top: 10px;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        /* ==========================================
+           1. INITIAL LOAD & TIMED SPINNER
+           ========================================== */
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('loader-screen');
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.visibility = 'hidden';
+                }, 1000);
+            }, 1500);
+        });
+
+        /* ==========================================
+           2. INITIAL DATA STRUCTURE
+           ========================================== */
+        const defaultStories = [
+            {
+                id: 1,
+                title: "Echoes of Silence",
+                description: "Reflections on unspoken conversations and quiet moments.",
+                chapters: [
+                    { title: "Chapter 1: The First Unspoken Word", content: "We were standing near the edge of the shore, watching the waves fade out. There were a thousand things left unsaid, hanging in the cool breeze..." },
+                    { title: "Chapter 2: Midnight Solitude", content: "Night brings clarity that daylight hides. As the world slumbers, thoughts wake up and begin their quiet discourse." }
+                ]
+            },
+            {
+                id: 2,
+                title: "The Unfinished Notebook",
+                description: "Stories born out of late-night thoughts.",
+                chapters: [
+                    { title: "Chapter 1: Blank Pages", content: "A blank page is not empty; it is simply full of possibilities waiting for courage." }
+                ]
+            }
+        ];
+
+        function getStories() {
+            const stored = localStorage.getItem('inner_feelings_stories');
+            return stored ? JSON.parse(stored) : defaultStories;
+        }
+
+        function saveStories(data) {
+            localStorage.setItem('inner_feelings_stories', JSON.stringify(data));
+        }
+
+        /* ==========================================
+           3. RENDER STORIES & CHAPTERS (PUBLIC VIEW)
+           ========================================== */
+        function renderStories() {
+            const listContainer = document.getElementById('stories-list');
+            const stories = getStories();
+            listContainer.innerHTML = '';
+
+            if (stories.length === 0) {
+                listContainer.innerHTML = `<p style="color: var(--text-muted); text-align: center;">No stories available yet.</p>`;
+                return;
+            }
+
+            stories.forEach((story, index) => {
+                const card = document.createElement('div');
+                card.className = 'story-card';
+                card.innerHTML = `
+          <div class="story-header" onclick="toggleStory(this)">
+            <div>
+              <div class="story-title">${story.title}</div>
+              <div class="story-meta">${story.description || 'Collection'} • ${story.chapters.length} Chapters</div>
+            </div>
+            <div class="expand-icon">▼</div>
+          </div>
+          <div class="chapters-list">
+            ${story.chapters.map((ch, chIdx) => `
+              <div class="chapter-item" onclick="openReader(${index}, ${chIdx})">
+                <span class="chapter-title">${ch.title}</span>
+                <span style="color: var(--accent);">Read →</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        function toggleStory(headerElement) {
+            const card = headerElement.parentElement;
+            const chaptersList = card.querySelector('.chapters-list');
+
+            if (card.classList.contains('open')) {
+                card.classList.remove('open');
+                chaptersList.style.maxHeight = null;
+            } else {
+                card.classList.add('open');
+                chaptersList.style.maxHeight = chaptersList.scrollHeight + "px";
+            }
+        }
+
+        /* ==========================================
+           4. READER DRAWER
+           ========================================== */
+        function openReader(storyIdx, chapterIdx) {
+            const stories = getStories();
+            const chapter = stories[storyIdx].chapters[chapterIdx];
+
+            document.getElementById('reader-title').innerText = chapter.title;
+            document.getElementById('reader-body').innerText = chapter.content;
+            document.getElementById('reader-view').style.display = 'block';
+        }
+
+        function closeReader() {
+            document.getElementById('reader-view').style.display = 'none';
+        }
+
+        /* ==========================================
+           5. SEARCH OPTION
+           ========================================== */
+        function filterStories() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.story-card');
+
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(query) ? "block" : "none";
+            });
+        }
+
+        /* ==========================================
+           6. OWNER ADMIN & CUSTOMIZATION PANEL
+           ========================================== */
+        function openAdmin() {
+            document.getElementById('admin-modal').style.display = 'flex';
+        }
+
+        function closeAdmin() {
+            document.getElementById('admin-modal').style.display = 'none';
+            document.getElementById('admin-login-box').style.display = 'block';
+            document.getElementById('admin-panel-box').style.display = 'none';
+            document.getElementById('adminPass').value = '';
+        }
+
+        function verifyAdmin() {
+            const pass = document.getElementById('adminPass').value;
+            if (pass === "onlyone1") {
+                document.getElementById('admin-login-box').style.display = 'none';
+                document.getElementById('admin-panel-box').style.display = 'block';
+                renderAdminManager();
+            } else {
+                alert("Incorrect owner password.");
+            }
+        }
+
+        function switchTab(tab) {
+            const addTab = document.getElementById('tab-add-content');
+            const manageTab = document.getElementById('tab-manage-content');
+            const addBtn = document.getElementById('tab-add-btn');
+            const manageBtn = document.getElementById('tab-manage-btn');
+
+            if (tab === 'add') {
+                addTab.style.display = 'block';
+                manageTab.style.display = 'none';
+                addBtn.classList.add('active');
+                manageBtn.classList.remove('active');
+            } else {
+                addTab.style.display = 'none';
+                manageTab.style.display = 'block';
+                addBtn.classList.remove('active');
+                manageBtn.classList.add('active');
+                renderAdminManager();
+            }
+        }
+
+        function saveNewChapter() {
+            const storyTitle = document.getElementById('newStoryTitle').value.trim();
+            const storyDesc = document.getElementById('newStoryDesc').value.trim();
+            const chTitle = document.getElementById('newChapterTitle').value.trim();
+            const chText = document.getElementById('newChapterText').value.trim();
+
+            if (!storyTitle || !chTitle || !chText) {
+                alert("Please fill in the required fields (Story Title, Chapter Title, and Chapter Text).");
+                return;
+            }
+
+            let stories = getStories();
+            let story = stories.find(s => s.title.toLowerCase() === storyTitle.toLowerCase());
+
+            if (!story) {
+                story = {
+                    id: Date.now(),
+                    title: storyTitle,
+                    description: storyDesc || "Collection",
+                    chapters: []
+                };
+                stories.push(story);
+            }
+
+            story.chapters.push({
+                title: chTitle,
+                content: chText
+            });
+
+            saveStories(stories);
+            renderStories();
+
+            // Clear Inputs
+            document.getElementById('newStoryTitle').value = '';
+            document.getElementById('newStoryDesc').value = '';
+            document.getElementById('newChapterTitle').value = '';
+            document.getElementById('newChapterText').value = '';
+
+            alert("New chapter published successfully!");
+        }
+
+        /* ==========================================
+           7. DELETE & CUSTOMIZE FUNCTIONS
+           ========================================== */
+        function renderAdminManager() {
+            const managerContainer = document.getElementById('admin-story-manager');
+            const stories = getStories();
+            managerContainer.innerHTML = '';
+
+            if (stories.length === 0) {
+                managerContainer.innerHTML = `<p style="color: var(--text-muted);">No stories to manage.</p>`;
+                return;
+            }
+
+            stories.forEach((story, sIdx) => {
+                const div = document.createElement('div');
+                div.className = 'manage-item';
+                div.innerHTML = `
+          <div class="manage-item-header">
+            <div>
+              <strong style="color: var(--accent); font-size: 1.1rem;">${story.title}</strong>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">${story.chapters.length} Chapters</div>
+            </div>
+            <div>
+              <button onclick="editStoryTitle(${sIdx})" style="background: transparent; border: 1px solid var(--accent); color: var(--accent); font-size: 0.75rem;">Edit Title</button>
+              <button class="btn-danger" onclick="deleteStory(${sIdx})" style="font-size: 0.75rem;">Delete Story</button>
+            </div>
+          </div>
+          <div class="manage-chapter-list">
+            ${story.chapters.map((ch, cIdx) => `
+              <div class="manage-chapter-item">
+                <span>${ch.title}</span>
+                <div>
+                  <button onclick="editChapter(${sIdx}, ${cIdx})" style="background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); font-size: 0.7rem; padding: 4px 8px;">Edit Content</button>
+                  <button class="btn-danger" onclick="deleteChapter(${sIdx}, ${cIdx})" style="font-size: 0.7rem; padding: 4px 8px;">Delete</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+                managerContainer.appendChild(div);
+            });
+        }
+
+        function deleteStory(storyIndex) {
+            let stories = getStories();
+            if (confirm(`Are you sure you want to delete the whole story "${stories[storyIndex].title}"?`)) {
+                stories.splice(storyIndex, 1);
+                saveStories(stories);
+                renderStories();
+                renderAdminManager();
+            }
+        }
+
+        function deleteChapter(storyIndex, chapterIndex) {
+            let stories = getStories();
+            const chName = stories[storyIndex].chapters[chapterIndex].title;
+            if (confirm(`Delete "${chName}"?`)) {
+                stories[storyIndex].chapters.splice(chapterIndex, 1);
+
+                // If story has no remaining chapters, clean up the story
+                if (stories[storyIndex].chapters.length === 0) {
+                    stories.splice(storyIndex, 1);
+                }
+
+                saveStories(stories);
+                renderStories();
+                renderAdminManager();
+            }
+        }
+
+        function editStoryTitle(storyIndex) {
+            let stories = getStories();
+            const currentTitle = stories[storyIndex].title;
+            const newTitle = prompt("Enter new Story Title:", currentTitle);
+
+            if (newTitle && newTitle.trim() !== "") {
+                stories[storyIndex].title = newTitle.trim();
+                saveStories(stories);
+                renderStories();
+                renderAdminManager();
+            }
+        }
+
+        function editChapter(storyIndex, chapterIndex) {
+            let stories = getStories();
+            const chapter = stories[storyIndex].chapters[chapterIndex];
+
+            const newTitle = prompt("Edit Chapter Title:", chapter.title);
+            if (newTitle === null) return;
+
+            const newContent = prompt("Edit Chapter Text Content:", chapter.content);
+            if (newContent === null) return;
+
+            if (newTitle.trim() !== "" && newContent.trim() !== "") {
+                stories[storyIndex].chapters[chapterIndex].title = newTitle.trim();
+                stories[storyIndex].chapters[chapterIndex].content = newContent.trim();
+                saveStories(stories);
+                renderStories();
+                renderAdminManager();
+            }
+        }
+
+        // Initialize display on page load
+        renderStories();
+    </script>
+</body>
+
+</html>
