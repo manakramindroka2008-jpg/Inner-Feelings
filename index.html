@@ -17,8 +17,8 @@
 
     <style>
         /* ==========================================
-       CSS STYLES & THEME VARIABLES
-       ========================================== */
+        CSS STYLES & THEME VARIABLES
+        ========================================== */
         :root {
             --bg-color: #0b0c10;
             --card-bg: #14161d;
@@ -124,12 +124,13 @@
         nav {
             position: fixed;
             top: 0;
-            width: 100%;
-            padding: 18px 8%;
+            left: 0;
+            right: 0;
+            padding: 16px 6%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(11, 12, 16, 0.85);
+            background: rgba(11, 12, 16, 0.9);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-color);
             z-index: 1000;
@@ -162,7 +163,7 @@
 
         .nav-actions {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
         }
 
@@ -175,11 +176,11 @@
             font-size: 0.85rem;
             outline: none;
             transition: all 0.3s ease;
-            width: 160px;
+            width: 150px;
         }
 
         .search-input:focus {
-            width: 210px;
+            width: 190px;
             border-color: var(--accent);
             background: rgba(255, 255, 255, 0.1);
         }
@@ -193,6 +194,7 @@
             font-size: 0.8rem;
             cursor: pointer;
             transition: 0.3s ease;
+            white-space: nowrap;
         }
 
         .admin-btn:hover {
@@ -208,7 +210,7 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 100px 20px 40px;
+            padding: 120px 20px 40px;
             background: radial-gradient(circle at center, rgba(201, 168, 106, 0.05) 0%, transparent 70%);
         }
 
@@ -217,6 +219,7 @@
             font-style: italic;
             color: var(--text-muted);
             margin-bottom: 10px;
+            font-size: 1rem;
         }
 
         .hero-title {
@@ -239,6 +242,8 @@
         .hero-nav {
             display: flex;
             gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .scroll-down {
@@ -288,16 +293,17 @@
         }
 
         .story-header {
-            padding: 25px;
+            padding: 20px 25px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 15px;
         }
 
         .story-title {
             font-family: var(--font-subheading);
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             color: var(--text-main);
         }
 
@@ -311,6 +317,7 @@
             color: var(--accent);
             font-size: 1.2rem;
             transition: transform 0.3s ease;
+            flex-shrink: 0;
         }
 
         .story-card.open .expand-icon {
@@ -332,6 +339,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
         }
 
         .chapter-item:hover {
@@ -411,7 +419,7 @@
             text-align: right;
         }
 
-        /* Reader View */
+        /* Reader View Overlay */
         #reader-view {
             display: none;
             position: fixed;
@@ -422,31 +430,38 @@
             background: var(--bg-color);
             z-index: 2000;
             overflow-y: auto;
-            padding: 80px 20px 40px;
+            padding: 40px 20px;
         }
 
         .reader-content {
             max-width: 750px;
             margin: 0 auto;
+            padding-top: 20px;
         }
 
         .close-reader {
-            position: fixed;
-            top: 25px;
-            right: 8%;
+            display: inline-block;
+            margin-bottom: 25px;
             background: transparent;
             border: 1px solid var(--accent);
             color: var(--accent);
             padding: 8px 18px;
             border-radius: 20px;
             cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        .close-reader:hover {
+            background: var(--accent);
+            color: var(--bg-color);
         }
 
         .reader-chapter-title {
             font-family: var(--font-subheading);
-            font-size: 2.2rem;
+            font-size: 2rem;
             color: var(--accent);
             margin-bottom: 20px;
+            line-height: 1.3;
         }
 
         .reader-body {
@@ -475,7 +490,7 @@
         .admin-content {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            padding: 30px;
+            padding: 30px 20px;
             width: 100%;
             max-width: 650px;
             border-radius: 8px;
@@ -556,11 +571,12 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+            gap: 10px;
         }
 
         .manage-chapter-list {
             margin-top: 10px;
-            padding-left: 15px;
+            padding-left: 12px;
             border-left: 2px solid var(--accent);
         }
 
@@ -570,6 +586,79 @@
             align-items: center;
             padding: 6px 0;
             font-size: 0.9rem;
+            gap: 10px;
+        }
+
+        /* ==========================================
+        MOBILE RESPONSIVENESS (MEDIA QUERIES)
+        ========================================== */
+        @media (max-width: 768px) {
+            nav {
+                flex-wrap: wrap;
+                padding: 12px 5%;
+                gap: 10px;
+            }
+
+            .nav-links {
+                display: none; /* Hide navigation links on smaller screens */
+            }
+
+            .nav-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .search-input {
+                flex-grow: 1;
+                max-width: none;
+            }
+
+            .search-input:focus {
+                width: auto;
+            }
+
+            .hero {
+                padding-top: 130px;
+                min-height: 75vh;
+            }
+
+            .hero-title {
+                font-size: 2.2rem;
+                letter-spacing: 2px;
+            }
+
+            .hero-description {
+                font-size: 0.95rem;
+                margin-bottom: 30px;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .story-header {
+                padding: 16px 18px;
+            }
+
+            .story-title {
+                font-size: 1.2rem;
+            }
+
+            .chapter-item {
+                padding: 12px 18px;
+            }
+
+            .poems-grid {
+                grid-template-columns: 1fr; /* Single column on phones */
+            }
+
+            .reader-chapter-title {
+                font-size: 1.6rem;
+            }
+
+            .reader-body {
+                font-size: 0.98rem;
+            }
         }
     </style>
 </head>
@@ -634,8 +723,8 @@
 
     <!-- 5. READING DRAWER -->
     <div id="reader-view">
-        <button class="close-reader" onclick="closeReader()">← Back to Site</button>
         <div class="reader-content">
+            <button class="close-reader" onclick="closeReader()">← Back to Site</button>
             <h2 id="reader-title" class="reader-chapter-title"></h2>
             <div id="reader-body" class="reader-body"></div>
         </div>
@@ -801,7 +890,7 @@
                     ${story.chapters.map((ch, chIdx) => `
                       <div class="chapter-item" onclick="openReader('story', ${index}, ${chIdx})">
                         <span class="chapter-title">${ch.title}</span>
-                        <span style="color: var(--accent);">Read →</span>
+                        <span style="color: var(--accent); white-space: nowrap;">Read →</span>
                       </div>
                     `).join('')}
                   </div>
@@ -1064,7 +1153,7 @@
 
             poems.forEach((p, pIdx) => {
                 html += `
-                <div class="manage-item" style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="manage-item" style="display:flex; justify-space-between; align-items:center;">
                     <span><strong>${p.title}</strong></span>
                     <button class="btn-danger" onclick="deletePoem(${pIdx})" style="font-size:0.75rem;">Delete Poem</button>
                 </div>`;
