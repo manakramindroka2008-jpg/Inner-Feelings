@@ -589,9 +589,7 @@
             gap: 10px;
         }
 
-        /* ==========================================
-        MOBILE RESPONSIVENESS (MEDIA QUERIES)
-        ========================================== */
+        /* Mobile Adjustments */
         @media (max-width: 768px) {
             nav {
                 flex-wrap: wrap;
@@ -600,7 +598,7 @@
             }
 
             .nav-links {
-                display: none; /* Hide navigation links on smaller screens */
+                display: none;
             }
 
             .nav-actions {
@@ -649,7 +647,7 @@
             }
 
             .poems-grid {
-                grid-template-columns: 1fr; /* Single column on phones */
+                grid-template-columns: 1fr;
             }
 
             .reader-chapter-title {
@@ -735,7 +733,7 @@
         <!-- Password Login Box -->
         <div class="admin-content" id="admin-login-box" style="max-width: 400px;">
             <h3>Owner Passcode</h3>
-            <input type="password" id="adminPass" placeholder="Enter owner key (Default: 1234)">
+            <input type="password" id="adminPass" placeholder="Enter owner key (Default: onlyone1)">
             <button onclick="verifyAdmin()">Login</button>
             <button onclick="closeAdmin()" style="background: transparent; color: var(--text-muted);">Cancel</button>
         </div>
@@ -754,12 +752,12 @@
                 <label style="font-size: 0.85rem; color: var(--text-muted);">Content Category:</label>
                 <select id="contentType" onchange="toggleAdminFormFields()">
                     <option value="story">Story Chapter</option>
-                    <option value="poem">Poem</option>
+                    <option value="poem" selected>Poem</option>
                     <option value="thought">Thought</option>
                 </select>
 
                 <!-- Story Fields -->
-                <div id="form-story-fields">
+                <div id="form-story-fields" style="display: none;">
                     <input type="text" id="newStoryTitle" placeholder="Story Title (e.g., Echoes of Silence)">
                     <input type="text" id="newStoryDesc" placeholder="Short Description">
                     <input type="text" id="newChapterTitle" placeholder="Chapter Title (e.g., Chapter 1: Unspoken Words)">
@@ -767,7 +765,7 @@
                 </div>
 
                 <!-- Poem Fields -->
-                <div id="form-poem-fields" style="display: none;">
+                <div id="form-poem-fields">
                     <input type="text" id="newPoemTitle" placeholder="Poem Title">
                     <textarea id="newPoemText" rows="8" placeholder="Write your poem stanzas here..."></textarea>
                 </div>
@@ -792,124 +790,122 @@
         </div>
     </div>
 
-    <!-- JavaScript Logic -->
-    <script>
-        /* ==========================================
-           1. INITIAL LOAD & TIMED SPINNER
-           ========================================== */
+    <!-- Firebase SDK Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            doc, 
+            deleteDoc, 
+            updateDoc, 
+            onSnapshot 
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // ==========================================
+        // 1. FIREBASE CONFIGURATION
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvXQFMYJ1-qGhes4F1pN4VdI7R9kYYtmI",
+            authDomain: "inner-feelings-d34cb.firebaseapp.com",
+            projectId: "inner-feelings-d34cb",
+            storageBucket: "inner-feelings-d34cb.firebasestorage.app",
+            messagingSenderId: "204705262418",
+            appId: "1:204705262418:web:f96ded80817aa7a77f288b"
+        };
+
+        // Initialize Firebase & Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Global arrays to keep state
+        window.allStories = [];
+        window.allPoems = [];
+        window.allThoughts = [];
+
+        /* Loader Hide */
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const loader = document.getElementById('loader-screen');
-                loader.style.opacity = '0';
-                setTimeout(() => {
-                    loader.style.visibility = 'hidden';
-                }, 1000);
-            }, 1500);
+                if (loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => {
+                        loader.style.visibility = 'hidden';
+                    }, 1000);
+                }
+            }, 1200);
         });
 
-        /* ==========================================
-           2. INITIAL DATA STRUCTURES
-           ========================================== */
-        const defaultStories = [
-            {
-                id: 1,
-                title: "Echoes of Silence",
-                description: "Reflections on unspoken conversations and quiet moments.",
-                chapters: [
-                    { title: "Chapter 1: The First Unspoken Word", content: "We were standing near the edge of the shore, watching the waves fade out. There were a thousand things left unsaid, hanging in the cool breeze..." },
-                    { title: "Chapter 2: Midnight Solitude", content: "Night brings clarity that daylight hides. As the world slumbers, thoughts wake up and begin their quiet discourse." }
-                ]
-            },
-            {
-                id: 2,
-                title: "The Unfinished Notebook",
-                description: "Stories born out of late-night thoughts.",
-                chapters: [
-                    { title: "Chapter 1: Blank Pages", content: "A blank page is not empty; it is simply full of possibilities waiting for courage." }
-                ]
-            }
-        ];
+        /* Real-time Listeners (Syncs across devices automatically) */
+        function initRealtimeSync() {
+            onSnapshot(collection(db, "stories"), (snapshot) => {
+                window.allStories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                window.renderStories();
+            });
 
-        const defaultPoems = [
-            {
-                id: 1,
-                title: "Shadows in the Gold",
-                content: "When twilight weaves its golden thread,\nAcross the skies where stars are bred,\nI trace the shadows on the wall,\nAnd softly hear the silent call."
-            }
-        ];
+            onSnapshot(collection(db, "poems"), (snapshot) => {
+                window.allPoems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                window.renderPoems();
+            });
 
-        const defaultThoughts = [
-            {
-                id: 1,
-                content: "The quietest minds often harbor the loudest universe.",
-                date: "July 2026"
-            }
-        ];
-
-        /* Local Storage Helpers */
-        function getData(key, fallback) {
-            const stored = localStorage.getItem(key);
-            return stored ? JSON.parse(stored) : fallback;
+            onSnapshot(collection(db, "thoughts"), (snapshot) => {
+                window.allThoughts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                window.allThoughts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                window.renderThoughts();
+            });
         }
 
-        function saveData(key, data) {
-            localStorage.setItem(key, JSON.stringify(data));
-        }
+        initRealtimeSync();
 
         /* ==========================================
-           3. RENDER CONTENT FUNCTIONS
+           2. RENDER FUNCTIONS
            ========================================== */
-        function renderAll() {
-            renderStories();
-            renderPoems();
-            renderThoughts();
-        }
-
-        function renderStories() {
+        window.renderStories = function() {
             const listContainer = document.getElementById('stories-list');
-            const stories = getData('inner_feelings_stories', defaultStories);
+            if (!listContainer) return;
             listContainer.innerHTML = '';
 
-            if (stories.length === 0) {
+            if (window.allStories.length === 0) {
                 listContainer.innerHTML = `<p style="color: var(--text-muted); text-align: center;">No stories available yet.</p>`;
                 return;
             }
 
-            stories.forEach((story, index) => {
+            window.allStories.forEach((story, index) => {
                 const card = document.createElement('div');
                 card.className = 'story-card content-item';
                 card.innerHTML = `
                   <div class="story-header" onclick="toggleStory(this)">
                     <div>
                       <div class="story-title">${story.title}</div>
-                      <div class="story-meta">${story.description || 'Collection'} • ${story.chapters.length} Chapters</div>
+                      <div class="story-meta">${story.description || 'Collection'} • ${story.chapters ? story.chapters.length : 0} Chapters</div>
                     </div>
                     <div class="expand-icon">▼</div>
                   </div>
                   <div class="chapters-list">
-                    ${story.chapters.map((ch, chIdx) => `
+                    ${story.chapters ? story.chapters.map((ch, chIdx) => `
                       <div class="chapter-item" onclick="openReader('story', ${index}, ${chIdx})">
                         <span class="chapter-title">${ch.title}</span>
                         <span style="color: var(--accent); white-space: nowrap;">Read →</span>
                       </div>
-                    `).join('')}
+                    `).join('') : ''}
                   </div>
                 `;
                 listContainer.appendChild(card);
             });
-        }
+        };
 
-        function renderPoems() {
+        window.renderPoems = function() {
             const listContainer = document.getElementById('poems-list');
-            const poems = getData('inner_feelings_poems', defaultPoems);
+            if (!listContainer) return;
             listContainer.innerHTML = '';
 
-            if (poems.length === 0) {
+            if (window.allPoems.length === 0) {
                 listContainer.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1;">No poems available yet.</p>`;
                 return;
             }
 
-            poems.forEach((poem, index) => {
+            window.allPoems.forEach((poem, index) => {
                 const card = document.createElement('div');
                 card.className = 'poem-card content-item';
                 card.innerHTML = `
@@ -921,19 +917,19 @@
                 `;
                 listContainer.appendChild(card);
             });
-        }
+        };
 
-        function renderThoughts() {
+        window.renderThoughts = function() {
             const listContainer = document.getElementById('thoughts-list');
-            const thoughts = getData('inner_feelings_thoughts', defaultThoughts);
+            if (!listContainer) return;
             listContainer.innerHTML = '';
 
-            if (thoughts.length === 0) {
+            if (window.allThoughts.length === 0) {
                 listContainer.innerHTML = `<p style="color: var(--text-muted);">No thoughts recorded yet.</p>`;
                 return;
             }
 
-            thoughts.forEach(thought => {
+            window.allThoughts.forEach(thought => {
                 const card = document.createElement('div');
                 card.className = 'thought-card content-item';
                 card.innerHTML = `
@@ -942,9 +938,9 @@
                 `;
                 listContainer.appendChild(card);
             });
-        }
+        };
 
-        function toggleStory(headerElement) {
+        window.toggleStory = function(headerElement) {
             const card = headerElement.parentElement;
             const chaptersList = card.querySelector('.chapters-list');
 
@@ -955,23 +951,21 @@
                 card.classList.add('open');
                 chaptersList.style.maxHeight = chaptersList.scrollHeight + "px";
             }
-        }
+        };
 
         /* ==========================================
-           4. READER DRAWER
+           3. READER DRAWER
            ========================================== */
-        function openReader(type, idx1, idx2) {
+        window.openReader = function(type, idx1, idx2) {
             let title = '';
             let content = '';
 
             if (type === 'story') {
-                const stories = getData('inner_feelings_stories', defaultStories);
-                const chapter = stories[idx1].chapters[idx2];
+                const chapter = window.allStories[idx1].chapters[idx2];
                 title = chapter.title;
                 content = chapter.content;
             } else if (type === 'poem') {
-                const poems = getData('inner_feelings_poems', defaultPoems);
-                const poem = poems[idx1];
+                const poem = window.allPoems[idx1];
                 title = poem.title;
                 content = poem.content;
             }
@@ -979,16 +973,14 @@
             document.getElementById('reader-title').innerText = title;
             document.getElementById('reader-body').innerText = content;
             document.getElementById('reader-view').style.display = 'block';
-        }
+        };
 
-        function closeReader() {
+        window.closeReader = function() {
             document.getElementById('reader-view').style.display = 'none';
-        }
+        };
 
-        /* ==========================================
-           5. GLOBAL SEARCH
-           ========================================== */
-        function filterAllContent() {
+        /* Search Filter */
+        window.filterAllContent = function() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const items = document.querySelectorAll('.content-item');
 
@@ -996,34 +988,34 @@
                 const text = item.innerText.toLowerCase();
                 item.style.display = text.includes(query) ? "" : "none";
             });
-        }
+        };
 
         /* ==========================================
-           6. OWNER ADMIN PANEL & FORM MANAGEMENT
+           4. GLOBAL ADMIN ACTIONS
            ========================================== */
-        function openAdmin() {
+        window.openAdmin = function() {
             document.getElementById('admin-modal').style.display = 'flex';
-        }
+        };
 
-        function closeAdmin() {
+        window.closeAdmin = function() {
             document.getElementById('admin-modal').style.display = 'none';
             document.getElementById('admin-login-box').style.display = 'block';
             document.getElementById('admin-panel-box').style.display = 'none';
             document.getElementById('adminPass').value = '';
-        }
+        };
 
-        function verifyAdmin() {
+        window.verifyAdmin = function() {
             const pass = document.getElementById('adminPass').value;
             if (pass === "onlyone1") {
                 document.getElementById('admin-login-box').style.display = 'none';
                 document.getElementById('admin-panel-box').style.display = 'block';
-                renderAdminManager();
+                window.renderAdminManager();
             } else {
                 alert("Incorrect owner password.");
             }
-        }
+        };
 
-        function switchTab(tab) {
+        window.switchTab = function(tab) {
             const addTab = document.getElementById('tab-add-content');
             const manageTab = document.getElementById('tab-manage-content');
             const addBtn = document.getElementById('tab-add-btn');
@@ -1039,185 +1031,178 @@
                 manageTab.style.display = 'block';
                 addBtn.classList.remove('active');
                 manageBtn.classList.add('active');
-                renderAdminManager();
+                window.renderAdminManager();
             }
-        }
+        };
 
-        function toggleAdminFormFields() {
+        window.toggleAdminFormFields = function() {
             const type = document.getElementById('contentType').value;
             document.getElementById('form-story-fields').style.display = type === 'story' ? 'block' : 'none';
             document.getElementById('form-poem-fields').style.display = type === 'poem' ? 'block' : 'none';
             document.getElementById('form-thought-fields').style.display = type === 'thought' ? 'block' : 'none';
-        }
+        };
 
-        function saveNewContent() {
+        window.saveNewContent = async function() {
             const type = document.getElementById('contentType').value;
 
-            if (type === 'story') {
-                const storyTitle = document.getElementById('newStoryTitle').value.trim();
-                const storyDesc = document.getElementById('newStoryDesc').value.trim();
-                const chTitle = document.getElementById('newChapterTitle').value.trim();
-                const chText = document.getElementById('newChapterText').value.trim();
+            try {
+                if (type === 'story') {
+                    const storyTitle = document.getElementById('newStoryTitle').value.trim();
+                    const storyDesc = document.getElementById('newStoryDesc').value.trim();
+                    const chTitle = document.getElementById('newChapterTitle').value.trim();
+                    const chText = document.getElementById('newChapterText').value.trim();
 
-                if (!storyTitle || !chTitle || !chText) {
-                    alert("Please fill in the required fields (Story Title, Chapter Title, and Chapter Text).");
-                    return;
+                    if (!storyTitle || !chTitle || !chText) {
+                        alert("Please fill in Story Title, Chapter Title, and Text.");
+                        return;
+                    }
+
+                    let existingStory = window.allStories.find(s => s.title.toLowerCase() === storyTitle.toLowerCase());
+
+                    if (existingStory) {
+                        const updatedChapters = [...(existingStory.chapters || []), { title: chTitle, content: chText }];
+                        await updateDoc(doc(db, "stories", existingStory.id), { chapters: updatedChapters });
+                    } else {
+                        await addDoc(collection(db, "stories"), {
+                            title: storyTitle,
+                            description: storyDesc || "Collection",
+                            chapters: [{ title: chTitle, content: chText }]
+                        });
+                    }
+
+                    document.getElementById('newStoryTitle').value = '';
+                    document.getElementById('newStoryDesc').value = '';
+                    document.getElementById('newChapterTitle').value = '';
+                    document.getElementById('newChapterText').value = '';
+
+                } else if (type === 'poem') {
+                    const title = document.getElementById('newPoemTitle').value.trim();
+                    const text = document.getElementById('newPoemText').value.trim();
+
+                    if (!title || !text) {
+                        alert("Please provide a title and text.");
+                        return;
+                    }
+
+                    await addDoc(collection(db, "poems"), { title, content: text });
+
+                    document.getElementById('newPoemTitle').value = '';
+                    document.getElementById('newPoemText').value = '';
+
+                } else if (type === 'thought') {
+                    const text = document.getElementById('newThoughtText').value.trim();
+
+                    if (!text) {
+                        alert("Please enter a thought.");
+                        return;
+                    }
+
+                    const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                    await addDoc(collection(db, "thoughts"), { 
+                        content: text, 
+                        date: dateStr,
+                        createdAt: Date.now()
+                    });
+
+                    document.getElementById('newThoughtText').value = '';
                 }
 
-                let stories = getData('inner_feelings_stories', defaultStories);
-                let story = stories.find(s => s.title.toLowerCase() === storyTitle.toLowerCase());
-
-                if (!story) {
-                    story = { id: Date.now(), title: storyTitle, description: storyDesc || "Collection", chapters: [] };
-                    stories.push(story);
-                }
-
-                story.chapters.push({ title: chTitle, content: chText });
-                saveData('inner_feelings_stories', stories);
-
-                document.getElementById('newStoryTitle').value = '';
-                document.getElementById('newStoryDesc').value = '';
-                document.getElementById('newChapterTitle').value = '';
-                document.getElementById('newChapterText').value = '';
-
-            } else if (type === 'poem') {
-                const title = document.getElementById('newPoemTitle').value.trim();
-                const text = document.getElementById('newPoemText').value.trim();
-
-                if (!title || !text) {
-                    alert("Please provide a title and text for the poem.");
-                    return;
-                }
-
-                let poems = getData('inner_feelings_poems', defaultPoems);
-                poems.push({ id: Date.now(), title, content: text });
-                saveData('inner_feelings_poems', poems);
-
-                document.getElementById('newPoemTitle').value = '';
-                document.getElementById('newPoemText').value = '';
-
-            } else if (type === 'thought') {
-                const text = document.getElementById('newThoughtText').value.trim();
-
-                if (!text) {
-                    alert("Please enter a thought or reflection.");
-                    return;
-                }
-
-                let thoughts = getData('inner_feelings_thoughts', defaultThoughts);
-                const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                thoughts.unshift({ id: Date.now(), content: text, date: dateStr });
-                saveData('inner_feelings_thoughts', thoughts);
-
-                document.getElementById('newThoughtText').value = '';
+                alert("Published live to all devices successfully!");
+            } catch (err) {
+                console.error("Error publishing to Firebase:", err);
+                alert("Failed to publish: " + err.message);
             }
+        };
 
-            renderAll();
-            alert("New item published successfully!");
-        }
-
-        /* ==========================================
-           7. ADMIN MANAGER (EDIT & DELETE ALL CONTENT)
-           ========================================== */
-        function renderAdminManager() {
+        window.renderAdminManager = function() {
             const container = document.getElementById('admin-content-manager');
+            if (!container) return;
             container.innerHTML = '';
 
             // Manage Stories
-            const stories = getData('inner_feelings_stories', defaultStories);
             let html = `<h4 style="color: var(--accent); margin-bottom: 10px;">Stories</h4>`;
-            if (stories.length === 0) html += `<p style="color: var(--text-muted); font-size:0.85rem;">No stories found.</p>`;
+            if (window.allStories.length === 0) html += `<p style="color: var(--text-muted); font-size:0.85rem;">No stories found.</p>`;
 
-            stories.forEach((s, sIdx) => {
+            window.allStories.forEach((s) => {
                 html += `
                 <div class="manage-item">
                     <div class="manage-item-header">
                         <div><strong style="color: var(--accent);">${s.title}</strong></div>
-                        <div><button class="btn-danger" onclick="deleteStory(${sIdx})" style="font-size:0.75rem;">Delete Story</button></div>
+                        <div><button class="btn-danger" onclick="deleteStory('${s.id}')" style="font-size:0.75rem;">Delete Story</button></div>
                     </div>
                     <div class="manage-chapter-list">
-                        ${s.chapters.map((ch, cIdx) => `
+                        ${s.chapters ? s.chapters.map((ch, cIdx) => `
                             <div class="manage-chapter-item">
                                 <span>${ch.title}</span>
-                                <button class="btn-danger" onclick="deleteChapter(${sIdx}, ${cIdx})" style="font-size:0.7rem; padding: 4px 8px;">Delete</button>
+                                <button class="btn-danger" onclick="deleteChapter('${s.id}', ${cIdx})" style="font-size:0.7rem; padding: 4px 8px;">Delete</button>
                             </div>
-                        `).join('')}
+                        `).join('') : ''}
                     </div>
                 </div>`;
             });
 
             // Manage Poems
-            const poems = getData('inner_feelings_poems', defaultPoems);
             html += `<h4 style="color: var(--accent); margin: 20px 0 10px;">Poems</h4>`;
-            if (poems.length === 0) html += `<p style="color: var(--text-muted); font-size:0.85rem;">No poems found.</p>`;
+            if (window.allPoems.length === 0) html += `<p style="color: var(--text-muted); font-size:0.85rem;">No poems found.</p>`;
 
-            poems.forEach((p, pIdx) => {
+            window.allPoems.forEach((p) => {
                 html += `
-                <div class="manage-item" style="display:flex; justify-space-between; align-items:center;">
+                <div class="manage-item" style="display:flex; justify-content:space-between; align-items:center;">
                     <span><strong>${p.title}</strong></span>
-                    <button class="btn-danger" onclick="deletePoem(${pIdx})" style="font-size:0.75rem;">Delete Poem</button>
+                    <button class="btn-danger" onclick="deletePoem('${p.id}')" style="font-size:0.75rem;">Delete Poem</button>
                 </div>`;
             });
 
             // Manage Thoughts
-            const thoughts = getData('inner_feelings_thoughts', defaultThoughts);
             html += `<h4 style="color: var(--accent); margin: 20px 0 10px;">Thoughts</h4>`;
-            if (thoughts.length === 0) html += `<p style="color: var(--text-muted); font-size:0.85rem;">No thoughts found.</p>`;
+            if (window.allThoughts.length === 0) html += `<p style="color: var(--text-muted); font-size:0.85rem;">No thoughts found.</p>`;
 
-            thoughts.forEach((t, tIdx) => {
+            window.allThoughts.forEach((t) => {
                 html += `
                 <div class="manage-item" style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-style:italic;">"${t.content.substring(0, 40)}..."</span>
-                    <button class="btn-danger" onclick="deleteThought(${tIdx})" style="font-size:0.75rem;">Delete Thought</button>
+                    <button class="btn-danger" onclick="deleteThought('${t.id}')" style="font-size:0.75rem;">Delete Thought</button>
                 </div>`;
             });
 
             container.innerHTML = html;
-        }
+        };
 
-        function deleteStory(index) {
-            let stories = getData('inner_feelings_stories', defaultStories);
+        window.deleteStory = async function(id) {
             if (confirm("Delete this entire story?")) {
-                stories.splice(index, 1);
-                saveData('inner_feelings_stories', stories);
-                renderAll();
-                renderAdminManager();
+                await deleteDoc(doc(db, "stories", id));
+                window.renderAdminManager();
             }
-        }
+        };
 
-        function deleteChapter(storyIdx, chIdx) {
-            let stories = getData('inner_feelings_stories', defaultStories);
+        window.deleteChapter = async function(storyId, chIdx) {
             if (confirm("Delete this chapter?")) {
-                stories[storyIdx].chapters.splice(chIdx, 1);
-                if (stories[storyIdx].chapters.length === 0) stories.splice(storyIdx, 1);
-                saveData('inner_feelings_stories', stories);
-                renderAll();
-                renderAdminManager();
+                const story = window.allStories.find(s => s.id === storyId);
+                if (story && story.chapters) {
+                    story.chapters.splice(chIdx, 1);
+                    if (story.chapters.length === 0) {
+                        await deleteDoc(doc(db, "stories", storyId));
+                    } else {
+                        await updateDoc(doc(db, "stories", storyId), { chapters: story.chapters });
+                    }
+                    window.renderAdminManager();
+                }
             }
-        }
+        };
 
-        function deletePoem(index) {
-            let poems = getData('inner_feelings_poems', defaultPoems);
+        window.deletePoem = async function(id) {
             if (confirm("Delete this poem?")) {
-                poems.splice(index, 1);
-                saveData('inner_feelings_poems', poems);
-                renderAll();
-                renderAdminManager();
+                await deleteDoc(doc(db, "poems", id));
+                window.renderAdminManager();
             }
-        }
+        };
 
-        function deleteThought(index) {
-            let thoughts = getData('inner_feelings_thoughts', defaultThoughts);
+        window.deleteThought = async function(id) {
             if (confirm("Delete this thought?")) {
-                thoughts.splice(index, 1);
-                saveData('inner_feelings_thoughts', thoughts);
-                renderAll();
-                renderAdminManager();
+                await deleteDoc(doc(db, "thoughts", id));
+                window.renderAdminManager();
             }
-        }
-
-        // Initialize display on page load
-        renderAll();
+        };
     </script>
 </body>
 
