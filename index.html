@@ -111,23 +111,13 @@
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @keyframes spin-reverse {
-            0% {
-                transform: rotate(360deg);
-            }
-
-            100% {
-                transform: rotate(0deg);
-            }
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
         }
 
         /* --- NAVIGATION BAR --- */
@@ -154,6 +144,22 @@
             font-weight: 700;
         }
 
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
         .nav-actions {
             display: flex;
             gap: 15px;
@@ -169,11 +175,11 @@
             font-size: 0.85rem;
             outline: none;
             transition: all 0.3s ease;
-            width: 180px;
+            width: 160px;
         }
 
         .search-input:focus {
-            width: 240px;
+            width: 210px;
             border-color: var(--accent);
             background: rgba(255, 255, 255, 0.1);
         }
@@ -196,7 +202,7 @@
 
         /* --- HERO SECTION --- */
         .hero {
-            min-height: 90vh;
+            min-height: 85vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -230,25 +236,32 @@
             font-weight: 300;
         }
 
+        .hero-nav {
+            display: flex;
+            gap: 15px;
+        }
+
         .scroll-down {
             color: var(--accent);
             text-decoration: none;
             font-size: 0.85rem;
             letter-spacing: 2px;
-            border-bottom: 1px solid var(--accent);
-            padding-bottom: 4px;
+            border: 1px solid var(--accent);
+            padding: 8px 16px;
+            border-radius: 20px;
             transition: 0.3s ease;
         }
 
         .scroll-down:hover {
-            color: var(--accent-hover);
+            background: var(--accent);
+            color: var(--bg-color);
         }
 
         /* --- MAIN CONTENT --- */
         .container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 60px 20px;
+            padding: 40px 20px;
         }
 
         .section-title {
@@ -260,7 +273,7 @@
             padding-bottom: 10px;
         }
 
-        /* Story Cards */
+        /* Card Elements */
         .story-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -328,6 +341,74 @@
         .chapter-title {
             font-size: 1rem;
             color: var(--text-main);
+        }
+
+        /* --- POEMS GRID & CARDS --- */
+        .poems-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .poem-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.3s ease;
+        }
+
+        .poem-card:hover {
+            border-color: rgba(201, 168, 106, 0.4);
+        }
+
+        .poem-title {
+            font-family: var(--font-subheading);
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .poem-excerpt {
+            font-style: italic;
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            white-space: pre-line;
+            margin-bottom: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* --- THOUGHTS CARDS --- */
+        .thought-card {
+            background: var(--card-bg);
+            border-left: 3px solid var(--accent);
+            border-top: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 0 8px 8px 0;
+            padding: 20px 25px;
+            margin-bottom: 18px;
+        }
+
+        .thought-text {
+            font-family: var(--font-subheading);
+            font-style: italic;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .thought-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: right;
         }
 
         /* Reader View */
@@ -409,7 +490,8 @@
         }
 
         .admin-content input,
-        .admin-content textarea {
+        .admin-content textarea,
+        .admin-content select {
             width: 100%;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
@@ -505,9 +587,14 @@
     <!-- 2. STICKY TOP NAVIGATION -->
     <nav>
         <a href="#" class="brand-logo">Inner Feelings</a>
+        <div class="nav-links">
+            <a href="#stories-section">Stories</a>
+            <a href="#poems-section">Poems</a>
+            <a href="#thoughts-section">Thoughts</a>
+        </div>
         <div class="nav-actions">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search stories..."
-                onkeyup="filterStories()">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search content..."
+                onkeyup="filterAllContent()">
             <button class="admin-btn" onclick="openAdmin()">Owner Login</button>
         </div>
     </nav>
@@ -517,20 +604,37 @@
         <div class="hero-subtitle">A collection of quiet thoughts & silent stories</div>
         <h1 class="hero-title">Inner Feelings</h1>
         <p class="hero-description">"We live in worlds we speak aloud, and universes we keep inside."</p>
-        <a href="#stories-section" class="scroll-down">EXPLORE STORIES ↓</a>
+        <div class="hero-nav">
+            <a href="#stories-section" class="scroll-down">STORIES</a>
+            <a href="#poems-section" class="scroll-down">POEMS</a>
+            <a href="#thoughts-section" class="scroll-down">THOUGHTS</a>
+        </div>
     </header>
 
-    <!-- 4. MAIN STORIES CONTAINER -->
-    <main class="container" id="stories-section">
-        <h2 class="section-title">Stories & Chapters</h2>
-        <div id="stories-list">
-            <!-- Dynamic Story Items will load here -->
-        </div>
+    <!-- 4. MAIN CONTENT SECTIONS -->
+    <main class="container">
+        <!-- Stories Section -->
+        <section id="stories-section">
+            <h2 class="section-title">Stories & Chapters</h2>
+            <div id="stories-list"></div>
+        </section>
+
+        <!-- Poems Section -->
+        <section id="poems-section" style="margin-top: 60px;">
+            <h2 class="section-title">Poems</h2>
+            <div id="poems-list" class="poems-grid"></div>
+        </section>
+
+        <!-- Thoughts Section -->
+        <section id="thoughts-section" style="margin-top: 60px;">
+            <h2 class="section-title">Thoughts & Reflections</h2>
+            <div id="thoughts-list"></div>
+        </section>
     </main>
 
     <!-- 5. READING DRAWER -->
     <div id="reader-view">
-        <button class="close-reader" onclick="closeReader()">← Back to List</button>
+        <button class="close-reader" onclick="closeReader()">← Back to Site</button>
         <div class="reader-content">
             <h2 id="reader-title" class="reader-chapter-title"></h2>
             <div id="reader-body" class="reader-body"></div>
@@ -542,7 +646,7 @@
         <!-- Password Login Box -->
         <div class="admin-content" id="admin-login-box" style="max-width: 400px;">
             <h3>Owner Passcode</h3>
-            <input type="password" id="adminPass" placeholder="Enter owner key (Default: 1234)">
+            <input type="password" id="adminPass" placeholder="Enter owner key (Default: onlyone1)">
             <button onclick="verifyAdmin()">Login</button>
             <button onclick="closeAdmin()" style="background: transparent; color: var(--text-muted);">Cancel</button>
         </div>
@@ -552,33 +656,49 @@
             <h3>Content Management Dashboard</h3>
 
             <div class="admin-tab-nav">
-                <button class="admin-tab-btn active" id="tab-add-btn" onclick="switchTab('add')">Add New</button>
-                <button class="admin-tab-btn" id="tab-manage-btn" onclick="switchTab('manage')">Manage & Delete
-                    Stories</button>
+                <button class="admin-tab-btn active" id="tab-add-btn" onclick="switchTab('add')">Add Content</button>
+                <button class="admin-tab-btn" id="tab-manage-btn" onclick="switchTab('manage')">Manage All</button>
             </div>
 
-            <!-- Tab 1: Add New Content -->
+            <!-- Tab 1: Add Content -->
             <div id="tab-add-content">
-                <input type="text" id="newStoryTitle" placeholder="Story Title (e.g., Echoes of Silence)">
-                <input type="text" id="newStoryDesc"
-                    placeholder="Short Description (e.g., Reflections on quiet moments)">
-                <input type="text" id="newChapterTitle" placeholder="Chapter Title (e.g., Chapter 1: Unspoken Words)">
-                <textarea id="newChapterText" rows="6"
-                    placeholder="Write or paste your chapter text here..."></textarea>
-                <button onclick="saveNewChapter()">Publish Chapter</button>
+                <label style="font-size: 0.85rem; color: var(--text-muted);">Content Category:</label>
+                <select id="contentType" onchange="toggleAdminFormFields()">
+                    <option value="story">Story Chapter</option>
+                    <option value="poem">Poem</option>
+                    <option value="thought">Thought</option>
+                </select>
+
+                <!-- Story Fields -->
+                <div id="form-story-fields">
+                    <input type="text" id="newStoryTitle" placeholder="Story Title (e.g., Echoes of Silence)">
+                    <input type="text" id="newStoryDesc" placeholder="Short Description">
+                    <input type="text" id="newChapterTitle" placeholder="Chapter Title (e.g., Chapter 1: Unspoken Words)">
+                    <textarea id="newChapterText" rows="6" placeholder="Write or paste your chapter text..."></textarea>
+                </div>
+
+                <!-- Poem Fields -->
+                <div id="form-poem-fields" style="display: none;">
+                    <input type="text" id="newPoemTitle" placeholder="Poem Title">
+                    <textarea id="newPoemText" rows="8" placeholder="Write your poem stanzas here..."></textarea>
+                </div>
+
+                <!-- Thought Fields -->
+                <div id="form-thought-fields" style="display: none;">
+                    <textarea id="newThoughtText" rows="4" placeholder="Write your thought or short quote..."></textarea>
+                </div>
+
+                <button onclick="saveNewContent()">Publish Item</button>
                 <button onclick="closeAdmin()" style="background: transparent; color: var(--text-muted);">Close</button>
             </div>
 
-            <!-- Tab 2: Manage & Delete Content -->
+            <!-- Tab 2: Manage Content -->
             <div id="tab-manage-content" style="display: none;">
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
-                    Select any story or chapter to customize or permanently delete it.
+                    Manage or permanently delete existing stories, poems, and thoughts.
                 </p>
-                <div id="admin-story-manager">
-                    <!-- Dynamic story manager cards will populate here -->
-                </div>
-                <button onclick="closeAdmin()"
-                    style="background: transparent; color: var(--text-muted); margin-top: 10px;">Close</button>
+                <div id="admin-content-manager"></div>
+                <button onclick="closeAdmin()" style="background: transparent; color: var(--text-muted); margin-top: 10px;">Close</button>
             </div>
         </div>
     </div>
@@ -599,7 +719,7 @@
         });
 
         /* ==========================================
-           2. INITIAL DATA STRUCTURE
+           2. INITIAL DATA STRUCTURES
            ========================================== */
         const defaultStories = [
             {
@@ -621,21 +741,44 @@
             }
         ];
 
-        function getStories() {
-            const stored = localStorage.getItem('inner_feelings_stories');
-            return stored ? JSON.parse(stored) : defaultStories;
+        const defaultPoems = [
+            {
+                id: 1,
+                title: "Shadows in the Gold",
+                content: "When twilight weaves its golden thread,\nAcross the skies where stars are bred,\nI trace the shadows on the wall,\nAnd softly hear the silent call."
+            }
+        ];
+
+        const defaultThoughts = [
+            {
+                id: 1,
+                content: "The quietest minds often harbor the loudest universe.",
+                date: "July 2026"
+            }
+        ];
+
+        /* Local Storage Helpers */
+        function getData(key, fallback) {
+            const stored = localStorage.getItem(key);
+            return stored ? JSON.parse(stored) : fallback;
         }
 
-        function saveStories(data) {
-            localStorage.setItem('inner_feelings_stories', JSON.stringify(data));
+        function saveData(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
         }
 
         /* ==========================================
-           3. RENDER STORIES & CHAPTERS (PUBLIC VIEW)
+           3. RENDER CONTENT FUNCTIONS
            ========================================== */
+        function renderAll() {
+            renderStories();
+            renderPoems();
+            renderThoughts();
+        }
+
         function renderStories() {
             const listContainer = document.getElementById('stories-list');
-            const stories = getStories();
+            const stories = getData('inner_feelings_stories', defaultStories);
             listContainer.innerHTML = '';
 
             if (stories.length === 0) {
@@ -645,24 +788,69 @@
 
             stories.forEach((story, index) => {
                 const card = document.createElement('div');
-                card.className = 'story-card';
+                card.className = 'story-card content-item';
                 card.innerHTML = `
-          <div class="story-header" onclick="toggleStory(this)">
-            <div>
-              <div class="story-title">${story.title}</div>
-              <div class="story-meta">${story.description || 'Collection'} • ${story.chapters.length} Chapters</div>
-            </div>
-            <div class="expand-icon">▼</div>
-          </div>
-          <div class="chapters-list">
-            ${story.chapters.map((ch, chIdx) => `
-              <div class="chapter-item" onclick="openReader(${index}, ${chIdx})">
-                <span class="chapter-title">${ch.title}</span>
-                <span style="color: var(--accent);">Read →</span>
-              </div>
-            `).join('')}
-          </div>
-        `;
+                  <div class="story-header" onclick="toggleStory(this)">
+                    <div>
+                      <div class="story-title">${story.title}</div>
+                      <div class="story-meta">${story.description || 'Collection'} • ${story.chapters.length} Chapters</div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                  </div>
+                  <div class="chapters-list">
+                    ${story.chapters.map((ch, chIdx) => `
+                      <div class="chapter-item" onclick="openReader('story', ${index}, ${chIdx})">
+                        <span class="chapter-title">${ch.title}</span>
+                        <span style="color: var(--accent);">Read →</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        function renderPoems() {
+            const listContainer = document.getElementById('poems-list');
+            const poems = getData('inner_feelings_poems', defaultPoems);
+            listContainer.innerHTML = '';
+
+            if (poems.length === 0) {
+                listContainer.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1;">No poems available yet.</p>`;
+                return;
+            }
+
+            poems.forEach((poem, index) => {
+                const card = document.createElement('div');
+                card.className = 'poem-card content-item';
+                card.innerHTML = `
+                    <div>
+                        <div class="poem-title">${poem.title}</div>
+                        <div class="poem-excerpt">${poem.content}</div>
+                    </div>
+                    <button class="admin-btn" style="width: 100%; margin-top: 10px;" onclick="openReader('poem', ${index})">Read Full Poem</button>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        function renderThoughts() {
+            const listContainer = document.getElementById('thoughts-list');
+            const thoughts = getData('inner_feelings_thoughts', defaultThoughts);
+            listContainer.innerHTML = '';
+
+            if (thoughts.length === 0) {
+                listContainer.innerHTML = `<p style="color: var(--text-muted);">No thoughts recorded yet.</p>`;
+                return;
+            }
+
+            thoughts.forEach(thought => {
+                const card = document.createElement('div');
+                card.className = 'thought-card content-item';
+                card.innerHTML = `
+                    <div class="thought-text">"${thought.content}"</div>
+                    <div class="thought-date">${thought.date || ''}</div>
+                `;
                 listContainer.appendChild(card);
             });
         }
@@ -683,12 +871,24 @@
         /* ==========================================
            4. READER DRAWER
            ========================================== */
-        function openReader(storyIdx, chapterIdx) {
-            const stories = getStories();
-            const chapter = stories[storyIdx].chapters[chapterIdx];
+        function openReader(type, idx1, idx2) {
+            let title = '';
+            let content = '';
 
-            document.getElementById('reader-title').innerText = chapter.title;
-            document.getElementById('reader-body').innerText = chapter.content;
+            if (type === 'story') {
+                const stories = getData('inner_feelings_stories', defaultStories);
+                const chapter = stories[idx1].chapters[idx2];
+                title = chapter.title;
+                content = chapter.content;
+            } else if (type === 'poem') {
+                const poems = getData('inner_feelings_poems', defaultPoems);
+                const poem = poems[idx1];
+                title = poem.title;
+                content = poem.content;
+            }
+
+            document.getElementById('reader-title').innerText = title;
+            document.getElementById('reader-body').innerText = content;
             document.getElementById('reader-view').style.display = 'block';
         }
 
@@ -697,20 +897,20 @@
         }
 
         /* ==========================================
-           5. SEARCH OPTION
+           5. GLOBAL SEARCH
            ========================================== */
-        function filterStories() {
+        function filterAllContent() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const cards = document.querySelectorAll('.story-card');
+            const items = document.querySelectorAll('.content-item');
 
-            cards.forEach(card => {
-                const text = card.innerText.toLowerCase();
-                card.style.display = text.includes(query) ? "block" : "none";
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                item.style.display = text.includes(query) ? "" : "none";
             });
         }
 
         /* ==========================================
-           6. OWNER ADMIN & CUSTOMIZATION PANEL
+           6. OWNER ADMIN PANEL & FORM MANAGEMENT
            ========================================== */
         function openAdmin() {
             document.getElementById('admin-modal').style.display = 'flex';
@@ -754,151 +954,181 @@
             }
         }
 
-        function saveNewChapter() {
-            const storyTitle = document.getElementById('newStoryTitle').value.trim();
-            const storyDesc = document.getElementById('newStoryDesc').value.trim();
-            const chTitle = document.getElementById('newChapterTitle').value.trim();
-            const chText = document.getElementById('newChapterText').value.trim();
+        function toggleAdminFormFields() {
+            const type = document.getElementById('contentType').value;
+            document.getElementById('form-story-fields').style.display = type === 'story' ? 'block' : 'none';
+            document.getElementById('form-poem-fields').style.display = type === 'poem' ? 'block' : 'none';
+            document.getElementById('form-thought-fields').style.display = type === 'thought' ? 'block' : 'none';
+        }
 
-            if (!storyTitle || !chTitle || !chText) {
-                alert("Please fill in the required fields (Story Title, Chapter Title, and Chapter Text).");
-                return;
+        function saveNewContent() {
+            const type = document.getElementById('contentType').value;
+
+            if (type === 'story') {
+                const storyTitle = document.getElementById('newStoryTitle').value.trim();
+                const storyDesc = document.getElementById('newStoryDesc').value.trim();
+                const chTitle = document.getElementById('newChapterTitle').value.trim();
+                const chText = document.getElementById('newChapterText').value.trim();
+
+                if (!storyTitle || !chTitle || !chText) {
+                    alert("Please fill in the required fields (Story Title, Chapter Title, and Chapter Text).");
+                    return;
+                }
+
+                let stories = getData('inner_feelings_stories', defaultStories);
+                let story = stories.find(s => s.title.toLowerCase() === storyTitle.toLowerCase());
+
+                if (!story) {
+                    story = { id: Date.now(), title: storyTitle, description: storyDesc || "Collection", chapters: [] };
+                    stories.push(story);
+                }
+
+                story.chapters.push({ title: chTitle, content: chText });
+                saveData('inner_feelings_stories', stories);
+
+                document.getElementById('newStoryTitle').value = '';
+                document.getElementById('newStoryDesc').value = '';
+                document.getElementById('newChapterTitle').value = '';
+                document.getElementById('newChapterText').value = '';
+
+            } else if (type === 'poem') {
+                const title = document.getElementById('newPoemTitle').value.trim();
+                const text = document.getElementById('newPoemText').value.trim();
+
+                if (!title || !text) {
+                    alert("Please provide a title and text for the poem.");
+                    return;
+                }
+
+                let poems = getData('inner_feelings_poems', defaultPoems);
+                poems.push({ id: Date.now(), title, content: text });
+                saveData('inner_feelings_poems', poems);
+
+                document.getElementById('newPoemTitle').value = '';
+                document.getElementById('newPoemText').value = '';
+
+            } else if (type === 'thought') {
+                const text = document.getElementById('newThoughtText').value.trim();
+
+                if (!text) {
+                    alert("Please enter a thought or reflection.");
+                    return;
+                }
+
+                let thoughts = getData('inner_feelings_thoughts', defaultThoughts);
+                const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                thoughts.unshift({ id: Date.now(), content: text, date: dateStr });
+                saveData('inner_feelings_thoughts', thoughts);
+
+                document.getElementById('newThoughtText').value = '';
             }
 
-            let stories = getStories();
-            let story = stories.find(s => s.title.toLowerCase() === storyTitle.toLowerCase());
-
-            if (!story) {
-                story = {
-                    id: Date.now(),
-                    title: storyTitle,
-                    description: storyDesc || "Collection",
-                    chapters: []
-                };
-                stories.push(story);
-            }
-
-            story.chapters.push({
-                title: chTitle,
-                content: chText
-            });
-
-            saveStories(stories);
-            renderStories();
-
-            // Clear Inputs
-            document.getElementById('newStoryTitle').value = '';
-            document.getElementById('newStoryDesc').value = '';
-            document.getElementById('newChapterTitle').value = '';
-            document.getElementById('newChapterText').value = '';
-
-            alert("New chapter published successfully!");
+            renderAll();
+            alert("New item published successfully!");
         }
 
         /* ==========================================
-           7. DELETE & CUSTOMIZE FUNCTIONS
+           7. ADMIN MANAGER (EDIT & DELETE ALL CONTENT)
            ========================================== */
         function renderAdminManager() {
-            const managerContainer = document.getElementById('admin-story-manager');
-            const stories = getStories();
-            managerContainer.innerHTML = '';
+            const container = document.getElementById('admin-content-manager');
+            container.innerHTML = '';
 
-            if (stories.length === 0) {
-                managerContainer.innerHTML = `<p style="color: var(--text-muted);">No stories to manage.</p>`;
-                return;
-            }
+            // Manage Stories
+            const stories = getData('inner_feelings_stories', defaultStories);
+            let html = `<h4 style="color: var(--accent); margin-bottom: 10px;">Stories</h4>`;
+            if (stories.length === 0) html += `<p style="color: var(--text-muted); font-size:0.85rem;">No stories found.</p>`;
 
-            stories.forEach((story, sIdx) => {
-                const div = document.createElement('div');
-                div.className = 'manage-item';
-                div.innerHTML = `
-          <div class="manage-item-header">
-            <div>
-              <strong style="color: var(--accent); font-size: 1.1rem;">${story.title}</strong>
-              <div style="font-size: 0.8rem; color: var(--text-muted);">${story.chapters.length} Chapters</div>
-            </div>
-            <div>
-              <button onclick="editStoryTitle(${sIdx})" style="background: transparent; border: 1px solid var(--accent); color: var(--accent); font-size: 0.75rem;">Edit Title</button>
-              <button class="btn-danger" onclick="deleteStory(${sIdx})" style="font-size: 0.75rem;">Delete Story</button>
-            </div>
-          </div>
-          <div class="manage-chapter-list">
-            ${story.chapters.map((ch, cIdx) => `
-              <div class="manage-chapter-item">
-                <span>${ch.title}</span>
-                <div>
-                  <button onclick="editChapter(${sIdx}, ${cIdx})" style="background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); font-size: 0.7rem; padding: 4px 8px;">Edit Content</button>
-                  <button class="btn-danger" onclick="deleteChapter(${sIdx}, ${cIdx})" style="font-size: 0.7rem; padding: 4px 8px;">Delete</button>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-                managerContainer.appendChild(div);
+            stories.forEach((s, sIdx) => {
+                html += `
+                <div class="manage-item">
+                    <div class="manage-item-header">
+                        <div><strong style="color: var(--accent);">${s.title}</strong></div>
+                        <div><button class="btn-danger" onclick="deleteStory(${sIdx})" style="font-size:0.75rem;">Delete Story</button></div>
+                    </div>
+                    <div class="manage-chapter-list">
+                        ${s.chapters.map((ch, cIdx) => `
+                            <div class="manage-chapter-item">
+                                <span>${ch.title}</span>
+                                <button class="btn-danger" onclick="deleteChapter(${sIdx}, ${cIdx})" style="font-size:0.7rem; padding: 4px 8px;">Delete</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
             });
+
+            // Manage Poems
+            const poems = getData('inner_feelings_poems', defaultPoems);
+            html += `<h4 style="color: var(--accent); margin: 20px 0 10px;">Poems</h4>`;
+            if (poems.length === 0) html += `<p style="color: var(--text-muted); font-size:0.85rem;">No poems found.</p>`;
+
+            poems.forEach((p, pIdx) => {
+                html += `
+                <div class="manage-item" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span><strong>${p.title}</strong></span>
+                    <button class="btn-danger" onclick="deletePoem(${pIdx})" style="font-size:0.75rem;">Delete Poem</button>
+                </div>`;
+            });
+
+            // Manage Thoughts
+            const thoughts = getData('inner_feelings_thoughts', defaultThoughts);
+            html += `<h4 style="color: var(--accent); margin: 20px 0 10px;">Thoughts</h4>`;
+            if (thoughts.length === 0) html += `<p style="color: var(--text-muted); font-size:0.85rem;">No thoughts found.</p>`;
+
+            thoughts.forEach((t, tIdx) => {
+                html += `
+                <div class="manage-item" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-style:italic;">"${t.content.substring(0, 40)}..."</span>
+                    <button class="btn-danger" onclick="deleteThought(${tIdx})" style="font-size:0.75rem;">Delete Thought</button>
+                </div>`;
+            });
+
+            container.innerHTML = html;
         }
 
-        function deleteStory(storyIndex) {
-            let stories = getStories();
-            if (confirm(`Are you sure you want to delete the whole story "${stories[storyIndex].title}"?`)) {
-                stories.splice(storyIndex, 1);
-                saveStories(stories);
-                renderStories();
+        function deleteStory(index) {
+            let stories = getData('inner_feelings_stories', defaultStories);
+            if (confirm("Delete this entire story?")) {
+                stories.splice(index, 1);
+                saveData('inner_feelings_stories', stories);
+                renderAll();
                 renderAdminManager();
             }
         }
 
-        function deleteChapter(storyIndex, chapterIndex) {
-            let stories = getStories();
-            const chName = stories[storyIndex].chapters[chapterIndex].title;
-            if (confirm(`Delete "${chName}"?`)) {
-                stories[storyIndex].chapters.splice(chapterIndex, 1);
-
-                // If story has no remaining chapters, clean up the story
-                if (stories[storyIndex].chapters.length === 0) {
-                    stories.splice(storyIndex, 1);
-                }
-
-                saveStories(stories);
-                renderStories();
+        function deleteChapter(storyIdx, chIdx) {
+            let stories = getData('inner_feelings_stories', defaultStories);
+            if (confirm("Delete this chapter?")) {
+                stories[storyIdx].chapters.splice(chIdx, 1);
+                if (stories[storyIdx].chapters.length === 0) stories.splice(storyIdx, 1);
+                saveData('inner_feelings_stories', stories);
+                renderAll();
                 renderAdminManager();
             }
         }
 
-        function editStoryTitle(storyIndex) {
-            let stories = getStories();
-            const currentTitle = stories[storyIndex].title;
-            const newTitle = prompt("Enter new Story Title:", currentTitle);
-
-            if (newTitle && newTitle.trim() !== "") {
-                stories[storyIndex].title = newTitle.trim();
-                saveStories(stories);
-                renderStories();
+        function deletePoem(index) {
+            let poems = getData('inner_feelings_poems', defaultPoems);
+            if (confirm("Delete this poem?")) {
+                poems.splice(index, 1);
+                saveData('inner_feelings_poems', poems);
+                renderAll();
                 renderAdminManager();
             }
         }
 
-        function editChapter(storyIndex, chapterIndex) {
-            let stories = getStories();
-            const chapter = stories[storyIndex].chapters[chapterIndex];
-
-            const newTitle = prompt("Edit Chapter Title:", chapter.title);
-            if (newTitle === null) return;
-
-            const newContent = prompt("Edit Chapter Text Content:", chapter.content);
-            if (newContent === null) return;
-
-            if (newTitle.trim() !== "" && newContent.trim() !== "") {
-                stories[storyIndex].chapters[chapterIndex].title = newTitle.trim();
-                stories[storyIndex].chapters[chapterIndex].content = newContent.trim();
-                saveStories(stories);
-                renderStories();
+        function deleteThought(index) {
+            let thoughts = getData('inner_feelings_thoughts', defaultThoughts);
+            if (confirm("Delete this thought?")) {
+                thoughts.splice(index, 1);
+                saveData('inner_feelings_thoughts', thoughts);
+                renderAll();
                 renderAdminManager();
             }
         }
 
         // Initialize display on page load
-        renderStories();
+        renderAll();
     </script>
 </body>
 
